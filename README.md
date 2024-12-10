@@ -70,4 +70,103 @@ public class OrderService {
 }
 
 
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import java.util.Optional;
+
+public class OrderServiceTest {
+
+    @Mock
+    private OrderDao orderDao;
+
+    @Mock
+    private OrderValidator orderValidator;
+
+    @Mock
+    private EncryptionDecryptionUtil encryptionDecryptionUtil;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @Mock
+    private UniqueIDGenerator uniqueIDGenerator;
+
+    @Mock
+    private EPayPrincipal ePayPrincipal;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    public void testCreateOrder() throws Exception {
+        // Arrange
+        String orderRequest = "test-order-request";
+        MerchantDto merchantDto = new MerchantDto("test-merchant-id");
+        OrderDto orderDto = new OrderDto("order-ref-123", "merchant-id-123", 100.0);
+        orderDto.setOrderHash("test-order-hash");
+        orderDto.setSbiOrderRefNumber("SBI123456");
+        
+        when(orderDao.getActiveMerchantByMID(anyString())).thenReturn(Optional.of(merchantDto));
+        when(orderDao.saveOrder(any(OrderDto.class))).thenReturn(orderDto);
+        when(orderValidator.validateOrderRequest(any(OrderDto.class))).thenReturn(true);
+        when(encryptionDecryptionUtil.decryptRequest(eq(orderRequest), eq(merchantDto))).thenReturn("{\"orderRefNumber\":\"order-ref-123\",\"merchantId\":\"merchant-id-123\",\"amount\":100.0}");
+        when(encryptionDecryptionUtil.hashValue(anyString(), anyString())).thenReturn("test-order-hash");
+        when(uniqueIDGenerator.generateSBIOrderRefNumber()).thenReturn("SBI123456");
+
+        // Act
+        TransactionResponse<OrderResponse> response = orderService.createOrder(new OrderRequest(orderRequest));
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1, response.getStatus());
+        assertNotNull(response.getData());
+        assertEquals("order-ref-123", response.getData().get(0).getOrderRefNum());
+        assertEquals("SBI123456", orderDto.getSbiOrderRefNumber());
+    }
+
+    @Test
+    public void testGetOrderByOrderRefNumber() {
+        // Arrange
+        String orderRefNumber = "order-ref-123";
+        MerchantDto merchantDto = new MerchantDto("test-merchant-id");
+        OrderDto orderDto = new OrderDto(orderRefNumber, "merchant-id-123", 100.0);
+
+        when(orderDao.getOrderByOrderRefNumber(orderRefNumber)).thenReturn(orderDto);
+
+        // Act
+        TransactionResponse<OrderResponse> response = orderService.getOrderByOrderRefNumber(orderRefNumber);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1, response.getStatus());
+        assertEquals(orderRefNumber, response.getData().get(0).getOrderRefNum());
+    }
+
+    @Test
+    public void testUpdateOrderStatus() {
+        // Arrange
+        String orderRefNumber = "order-ref-123";
+        String status = "Processed";
+
+        doNothing().when(orderDao).updateOrderStatus(orderRefNumber, status);
+
+        // Act
+        TransactionResponse<String> response = orderService.updateOrderStatus(orderRefNumber, status);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(1, response.getStatus());
+        assertEquals("Order Status updated Successfully.", response.getData().get(0));
+    }
+}
 
