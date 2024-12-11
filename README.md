@@ -267,3 +267,102 @@ class OrderServiceTest {
                 -> new TransactionException(ErrorConstants.NOT_FOUND_ERROR_CODE,
                 MessageFormat.format(ErrorConstants.NOT_FOUND_ERROR_MESSAGE, "Valid Merchant")));
     }
+
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock
+    private OrderDao orderDao; // Mock the DAO dependency
+
+    @Mock
+    private EPayIdentityUtil ePayIdentityUtil; // Mock the utility dependency
+
+    @InjectMocks
+    private OrderService orderService; // Inject mocks into the service
+
+    @BeforeEach
+    void setUp() {
+        // Set up necessary initializations if required
+    }
+
+    @Test
+    void testGetOrderByOrderRefNumber_Success() {
+        // Arrange
+        String orderRefNumber = "ORD123";
+        MerchantDto mockMerchant = new MerchantDto(); // Mocked MerchantDto
+        OrderDto mockOrder = new OrderDto(); // Mocked OrderDto
+        EPayPrincipal mockPrincipal = new EPayPrincipal();
+        mockPrincipal.setMid("MID123");
+
+        // Mocking static method calls
+        Mockito.mockStatic(EPayIdentityUtil.class).when(EPayIdentityUtil::getUserPrincipal).thenReturn(mockPrincipal);
+
+        // Mock the DAO calls
+        when(orderDao.getActiveMerchantByMID("MID123")).thenReturn(Optional.of(mockMerchant));
+        when(orderDao.getOrderByOrderRefNumber(orderRefNumber)).thenReturn(mockOrder);
+
+        // Act
+        TransactionResponse<OrderResponse> response = orderService.getOrderByOrderRefNumber(orderRefNumber);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(mockOrder, response.getOrder());
+        assertEquals(mockMerchant, response.getMerchant());
+    }
+
+    @Test
+    void testGetOrderByOrderRefNumber_MerchantNotFound() {
+        // Arrange
+        String orderRefNumber = "ORD123";
+        EPayPrincipal mockPrincipal = new EPayPrincipal();
+        mockPrincipal.setMid("MID123");
+
+        Mockito.mockStatic(EPayIdentityUtil.class).when(EPayIdentityUtil::getUserPrincipal).thenReturn(mockPrincipal);
+
+        when(orderDao.getActiveMerchantByMID("MID123")).thenReturn(Optional.empty());
+
+        // Act & Assert
+        TransactionException exception = assertThrows(TransactionException.class, 
+            () -> orderService.getOrderByOrderRefNumber(orderRefNumber));
+
+        assertEquals(ErrorConstants.NOT_FOUND_ERROR_CODE, exception.getErrorCode());
+        assertTrue(exception.getMessage().contains("Valid Merchant"));
+    }
+
+    @Test
+    void testGetOrderByOrderRefNumber_OrderNotFound() {
+        // Arrange
+        String orderRefNumber = "ORD123";
+        MerchantDto mockMerchant = new MerchantDto();
+        EPayPrincipal mockPrincipal = new EPayPrincipal();
+        mockPrincipal.setMid("MID123");
+
+        Mockito.mockStatic(EPayIdentityUtil.class).when(EPayIdentityUtil::getUserPrincipal).thenReturn(mockPrincipal);
+
+        when(orderDao.getActiveMerchantByMID("MID123")).thenReturn(Optional.of(mockMerchant));
+        when(orderDao.getOrderByOrderRefNumber(orderRefNumber)).thenReturn(null);
+
+        // Act
+        TransactionResponse<OrderResponse> response = orderService.getOrderByOrderRefNumber(orderRefNumber);
+
+        // Assert
+        assertNotNull(response);
+        assertNull(response.getOrder());
+        assertEquals(mockMerchant, response.getMerchant());
+    }
+}
+
+    
