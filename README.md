@@ -170,3 +170,8 @@ public class OrderServiceTest {
     }
 }
 
+
+
+    public static EPayPrincipal getUserPrincipal() {
+       return (EPayPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
