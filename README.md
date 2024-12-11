@@ -246,3 +246,24 @@ class OrderServiceTest {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+    public TransactionResponse<OrderResponse> getOrderByOrderRefNumber(String orderRefNumber) {
+        MerchantDto merchantDto = getMerchantDto();
+        OrderDto orderDto = orderDao.getOrderByOrderRefNumber(orderRefNumber);
+        return buildTransactionResponse(orderDto, merchantDto);
+    }
+
+        private MerchantDto getMerchantDto() {
+        EPayPrincipal ePayPrincipal = EPayIdentityUtil.getUserPrincipal();
+        return orderDao.getActiveMerchantByMID(ePayPrincipal.getMid()).orElseThrow(()
+                -> new TransactionException(ErrorConstants.NOT_FOUND_ERROR_CODE,
+                MessageFormat.format(ErrorConstants.NOT_FOUND_ERROR_MESSAGE, "Valid Merchant")));
+    }
