@@ -39,3 +39,43 @@ VALUES (
     NULL,
     NULL
 );
+
+
+
+INSERT INTO orders (
+    id,
+    merchant_id,
+    customer_id,
+    currency_code,
+    order_amount,
+    order_ref_number,
+    sbi_order_ref_number,
+    status,
+    other_details,
+    expiry,
+    multi_accounts,
+    payment_mode,
+    order_hash,
+    created_by,
+    updated_by,
+    created_date,
+    updated_date
+) VALUES (
+    SYS_GUID(), -- Automatically generates a unique RAW(16) value
+    'MERCHANT123',
+    'CUSTOMER456',
+    'USD',
+    1000.50,
+    'ORDER_REF_001',
+    'SBI_ORDER_REF_001',
+    'PENDING',
+    'This order includes additional details for testing.',
+    1685404800, -- Example expiry timestamp (e.g., Unix epoch format)
+    'Account details for multi-account handling.',
+    'CREDIT_CARD',
+    'HASHED_ORDER_VALUE_1234567890',
+    'admin_user',
+    'system_user',
+    1685404800, -- Example created_date (e.g., Unix epoch format)
+    1685404900  -- Example updated_date (e.g., Unix epoch format)
+);
