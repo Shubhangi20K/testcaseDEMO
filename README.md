@@ -1,53 +1,41 @@
-Pre-Requisites for DCMS API:-
-URL:-  
-https://eisuat.sbi.co.in/gen5/gateway/thirdParty/wrapper/services
+package com.example.demo.service;
 
-Rquest:- 
-{
-    "REQUEST_REFERENCE_NUMBER": "SBIDK24156091748082271708",
-    "SOURCE_ID": "DK",
-    "DESTINATION": "DCMS",
-    "TXN_TYPE": "LIMIT_FLAG",			
-    "TXN_SUB_TYPE": "ENQUIRY",
-    "EIS_PAYLOAD": {
-        "CardNumber": "4591782007414931",
-        "ActionType": "INQUIRY",
-        "BankCode": "SBI",
-        "SourceId": "IN"
+import com.example.demo.model.LimitFlagRequest;
+import com.example.demo.model.LimitFlagResponse;
+import com.example.demo.model.ChannelDetail;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+public class LimitFlagService {
+
+    public LimitFlagResponse getLimitFlag(LimitFlagRequest request) {
+        // Create response object
+        LimitFlagResponse response = new LimitFlagResponse();
+        List<ChannelDetail> channelDetails = new ArrayList<>();
+
+        // Mock data based on the request
+        // In a real-world scenario, this logic would involve more complex processing
+        channelDetails.add(createChannelDetail("Y", "NA", "DOM", "NA"));
+        channelDetails.add(createChannelDetail("N", "NA", "INT", "NA"));
+        channelDetails.add(createChannelDetail("Y", "40000", "ATM", "000000000000"));
+        channelDetails.add(createChannelDetail("Y", "75000", "POS", "000000000000"));
+        channelDetails.add(createChannelDetail("N", "NA", "ECOM", "NA"));
+
+        // Set the channel details into the response
+        response.getEIS_RESPONSE().setChannelDetails(channelDetails);
+
+        return response;
+    }
+
+    private ChannelDetail createChannelDetail(String flag, String mLimit, String cId, String eLimit) {
+        ChannelDetail channelDetail = new ChannelDetail();
+        channelDetail.setFlag(flag);
+        channelDetail.setmLimit(mLimit);
+        channelDetail.setcId(cId);
+        channelDetail.seteLimit(eLimit);
+        return channelDetail;
     }
 }
-
-Response:- 
-{
-    "EIS_RESPONSE": {
-        "ChannelDetails": [
-            {
-                "Flag": "Y",
-                "mLimit": "NA",
-                "cId": "DOM",
-                "eLimit": "NA"
-            },
-            {
-                "Flag": "N",
-                "mLimit": "NA",
-                "cId": "INT",
-                "eLimit": "NA"
-            },
-            {
-                "Flag": "Y",
-                "mLimit": "40000",
-                "cId": "ATM",
-                "eLimit": "000000000000"
-            },
-            {
-                "Flag": "Y",
-                "mLimit": "75000",
-                "cId": "POS",
-                "eLimit": "000000000000"
-            },
-            {
-                "Flag": "N",
-                "mLimit": "NA",
-                "cId": "ECOM",
-                "eLimit": "NA"
-            },
