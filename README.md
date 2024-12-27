@@ -1,27 +1,53 @@
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+Pre-Requisites for DCMS API:-
+URL:-  
+https://eisuat.sbi.co.in/gen5/gateway/thirdParty/wrapper/services
 
-@RestController
-public class EncryptionController {
-
-    private static final String ENCRYPTION_KEY = "1234567890123456"; // 16-byte key for AES
-
-    @GetMapping("/encrypt")
-    public String encrypt(@RequestParam String plaintext) {
-        try {
-            return EncryptionUtils.encrypt(plaintext, ENCRYPTION_KEY);
-        } catch (Exception e) {
-            return "Error encrypting the text: " + e.getMessage();
-        }
-    }
-
-    @GetMapping("/decrypt")
-    public String decrypt(@RequestParam String ciphertext) {
-        try {
-            return EncryptionUtils.decrypt(ciphertext, ENCRYPTION_KEY);
-        } catch (Exception e) {
-            return "Error decrypting the text: " + e.getMessage();
-        }
+Rquest:- 
+{
+    "REQUEST_REFERENCE_NUMBER": "SBIDK24156091748082271708",
+    "SOURCE_ID": "DK",
+    "DESTINATION": "DCMS",
+    "TXN_TYPE": "LIMIT_FLAG",			
+    "TXN_SUB_TYPE": "ENQUIRY",
+    "EIS_PAYLOAD": {
+        "CardNumber": "4591782007414931",
+        "ActionType": "INQUIRY",
+        "BankCode": "SBI",
+        "SourceId": "IN"
     }
 }
+
+Response:- 
+{
+    "EIS_RESPONSE": {
+        "ChannelDetails": [
+            {
+                "Flag": "Y",
+                "mLimit": "NA",
+                "cId": "DOM",
+                "eLimit": "NA"
+            },
+            {
+                "Flag": "N",
+                "mLimit": "NA",
+                "cId": "INT",
+                "eLimit": "NA"
+            },
+            {
+                "Flag": "Y",
+                "mLimit": "40000",
+                "cId": "ATM",
+                "eLimit": "000000000000"
+            },
+            {
+                "Flag": "Y",
+                "mLimit": "75000",
+                "cId": "POS",
+                "eLimit": "000000000000"
+            },
+            {
+                "Flag": "N",
+                "mLimit": "NA",
+                "cId": "ECOM",
+                "eLimit": "NA"
+            },
