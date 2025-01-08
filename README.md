@@ -18,3 +18,43 @@ CREATE TABLE ORDERS(
     created_date NUMBER,
     updated_date NUMBER
 );
+
+
+INSERT INTO ORDERS (
+    merchant_id,
+    customer_id,
+    currency_code,
+    order_amount,
+    order_ref_number,
+    sbi_order_ref_number,
+    status,
+    other_details,
+    expiry,
+    multi_accounts,
+    payment_mode,
+    order_hash,
+    return_url,
+    created_by,
+    updated_by,
+    created_date,
+    updated_date
+)
+VALUES (
+    'merchant123',
+    'customer456',
+    'USD',
+    100.50,
+    'ORD123456',
+    'SBI123456',
+    'Pending',
+    'Order placed successfully.',
+    30,
+    '{"account1":"1000", "account2":"2000"}',
+    'Credit Card',
+    'HASH1234567890abcdef',
+    'http://example.com/return',
+    'admin',
+    'admin',
+    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+);
