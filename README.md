@@ -1,60 +1,31 @@
-CREATE TABLE ORDERS(
-    id RAW(16) DEFAULT SYS_GUID() PRIMARY KEY NOT NULL,
-    merchant_id VARCHAR2(50),
-    customer_id VARCHAR2(50),
-    currency_code VARCHAR2(50),
-    order_amount NUMBER,
-    order_ref_number VARCHAR2(255),
-    sbi_order_ref_number VARCHAR2(255),
-    status VARCHAR2(50),
-    other_details CLOB,
-    expiry NUMBER,
-    multi_accounts CLOB,
-    payment_mode VARCHAR2(50),
-    order_hash VARCHAR2(2000),
-    return_url VARCHAR2(2000),
-    created_by VARCHAR2(50),
-    updated_by VARCHAR2(50),
-    created_date NUMBER,
-    updated_date NUMBER
-);
+     String eisResponse = getWebClient()
+                .post()
+                .uri(url)
+                .accept(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE))
+               // .headers(headers->headers.add(HttpHeaders.AUTHORIZATION, "AccessToken " + encryptedPublicKey))
+                .headers(headers->headers.add(HttpHeaders.AUTHORIZATION, encryptedPublicKey))
+                .contentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE))
+                .bodyValue(ResponseData1)
+                .retrieve()
+                .bodyToMono(String.class)  // Deserialize the response to GstResponse
+                .block();
 
 
-INSERT INTO ORDERS (
-    merchant_id,
-    customer_id,
-    currency_code,
-    order_amount,
-    order_ref_number,
-    sbi_order_ref_number,
-    status,
-    other_details,
-    expiry,
-    multi_accounts,
-    payment_mode,
-    order_hash,
-    return_url,
-    created_by,
-    updated_by,
-    created_date,
-    updated_date
-)
-VALUES (
-    'merchant123',
-    'customer456',
-    'USD',
-    100.50,
-    'ORD123456',
-    'SBI123456',
-    'Pending',
-    'Order placed successfully.',
-    30,
-    '{"account1":"1000", "account2":"2000"}',
-    'Credit Card',
-    'HASH1234567890abcdef',
-    'http://example.com/return',
-    'admin',
-    'admin',
-    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
-    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
-);
+
+
+					URL myUrl = new URL(null, url);
+					HttpURLConnection conn = (HttpURLConnection) myUrl.openConnection();
+					
+					conn.setRequestProperty("Content-Type", "application/json");
+					conn.setRequestProperty("Accept", "application/json");
+					conn.setRequestMethod("POST");
+					conn.setDoOutput(true);
+					
+					conn.setRequestProperty("AccessToken", AESKeyusingRSAEncrption.replaceAll("\n", ""));
+					BufferedOutputStream bw = new BufferedOutputStream(conn.getOutputStream());
+					DataOutputStream wr = new DataOutputStream(bw);
+					wr.write(requestData.getBytes("UTF-8"));
+					wr.flush();
+					wr.close();
+					bw.close();
+					
