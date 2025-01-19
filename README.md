@@ -1,38 +1,39 @@
-@Data
-public class DeviceDetailsRequest {
+@GetMapping(path = "/deviceDetail/{orderHash}")
+@Operation(summary = "Get Device Details by OrderHash")
+public DeviceDetails getDeviceDetailsByPath(@PathVariable String orderHash) 
+        throws InstantiationException, IllegalAccessException {
 
-    private String orderHash;
-    private String clientIp;
-    private String deviceDetail;
+    logger.info("Fetching Device Details with orderHash {}", orderHash);
+
+    return tokenService.getDeviceDetails(orderHash);
 }
-   
-   @PostMapping(path = "/deviceDeatil")
-    @Operation(summary = "Transaction Token Generation")
-    public DeviceDetails generateTransactionToken(@RequestBody DeviceDetailsRequest payLoad) throws InstantiationException, IllegalAccessException {
 
-        logger.info("Transaction Token Request with orderHash {}");
-        return tokenService.generateTransactionToken( payLoad);
+@Repository
+public interface CaptureDetailInfoRepository extends JpaRepository<DeviceDetails, Long> {
+
+    Optional<DeviceDetails> findByOrderHash(String orderHash);
+}
+@Service
+public class TokenService {
+
+    @Autowired
+    private CaptureDetailInfoRepository captureDetailInfoRepository;
+
+    public DeviceDetails getDeviceDetails(String orderHash) throws InstantiationException, IllegalAccessException {
+        logger.debug("Fetching device details for orderHash {}", orderHash);
+
+        // Fetch data from the repository
+        return captureDetailInfoRepository.findByOrderHash(orderHash)
+                .orElseThrow(() -> new IllegalAccessException("Device details not found for orderHash: " + orderHash));
     }
+}
+@GetMapping(path = "/deviceDetail")
+@Operation(summary = "Get Device Details by OrderHash")
+public DeviceDetails getDeviceDetails(@RequestParam String orderHash) 
+        throws InstantiationException, IllegalAccessException {
 
-  public DeviceDetails generateTransactionToken(DeviceDetailsRequest payLoad) throws InstantiationException, IllegalAccessException {
-        logger.debug(" Saving Capture Detail Information");
-        DeviceDetailsDto deviceDetailsDto = DeviceDetailsDto.builder()
-                  .orderHash(String.valueOf(payLoad.getOrderHash()))
-                .clientIp(String.valueOf(payLoad.getClientIp()))
-                .createdDate(DateTimeUtils.currentTimeMillis())
-                .deviceDetail(Arrays.toString(String.valueOf(payLoad.getDeviceDetail()).getBytes())).build();
-        //Save Device information
-        return   tokenDao.saveCaptureDeviceInfo(deviceDetailsDto);
+    logger.info("Fetching Device Details with orderHash {}", orderHash);
 
-
-    }
-   public DeviceDetails saveCaptureDeviceInfo(DeviceDetailsDto deviceDetailsDto) throws InstantiationException, IllegalAccessException {
-        DeviceDetails deviceDetails = new DeviceDetails();//objectMapper.convertValue(captureDetailInfoDto,CaptureDeviceInfo.class);
-        deviceDetails.setOrderHash(deviceDetailsDto.getOrderHash());
-        deviceDetails.setClientIp(deviceDetailsDto.getClientIp());
-        deviceDetails.setDeviceDetails(deviceDetailsDto.getDeviceDetail().getBytes());
-        deviceDetails.setCreatedDate(DateTimeUtils.currentTimeMillis());
-        return capturedetailinforepository.save(deviceDetails);
-      
-    }
-
+    // Retrieve device details from the service layer
+    return tokenService.getDeviceDetails(orderHash);
+}
