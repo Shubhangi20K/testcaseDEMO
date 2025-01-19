@@ -1,31 +1,33 @@
-     String eisResponse = getWebClient()
-                .post()
-                .uri(url)
-                .accept(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE))
-               // .headers(headers->headers.add(HttpHeaders.AUTHORIZATION, "AccessToken " + encryptedPublicKey))
-                .headers(headers->headers.add(HttpHeaders.AUTHORIZATION, encryptedPublicKey))
-                .contentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE))
-                .bodyValue(ResponseData1)
-                .retrieve()
-                .bodyToMono(String.class)  // Deserialize the response to GstResponse
-                .block();
+    @PostMapping(path = "/deviceDeatil")
+    @Operation(summary = "Transaction Token Generation")
+    public DeviceDetails generateTransactionToken(@RequestBody DeviceDetailsRequest payLoad) throws InstantiationException, IllegalAccessException {
+
+        logger.info("Transaction Token Request with orderHash {}");
+        return tokenService.generateTransactionToken( payLoad);
+    }
 
 
+  public DeviceDetails generateTransactionToken(DeviceDetailsRequest payLoad) throws InstantiationException, IllegalAccessException {
+        logger.debug(" Saving Capture Detail Information");
+        DeviceDetailsDto deviceDetailsDto = DeviceDetailsDto.builder()
+                //  .orderHash(String.valueOf(payLoad.getOrderHash()))
+                .clientIp(String.valueOf(payLoad.getClientIp()))
+                .createdDate(DateTimeUtils.currentTimeMillis())
+                .deviceDetail(Arrays.toString(String.valueOf(payLoad.getDeviceDetail()).getBytes())).build();
+        //Save Device information
+        return   tokenDao.saveCaptureDeviceInfo(deviceDetailsDto);
 
 
-					URL myUrl = new URL(null, url);
-					HttpURLConnection conn = (HttpURLConnection) myUrl.openConnection();
-					
-					conn.setRequestProperty("Content-Type", "application/json");
-					conn.setRequestProperty("Accept", "application/json");
-					conn.setRequestMethod("POST");
-					conn.setDoOutput(true);
-					
-					conn.setRequestProperty("AccessToken", AESKeyusingRSAEncrption.replaceAll("\n", ""));
-					BufferedOutputStream bw = new BufferedOutputStream(conn.getOutputStream());
-					DataOutputStream wr = new DataOutputStream(bw);
-					wr.write(requestData.getBytes("UTF-8"));
-					wr.flush();
-					wr.close();
-					bw.close();
-					
+    }
+
+       public DeviceDetails saveCaptureDeviceInfo(DeviceDetailsDto deviceDetailsDto) throws InstantiationException, IllegalAccessException {
+        DeviceDetails deviceDetails = new DeviceDetails();//objectMapper.convertValue(captureDetailInfoDto,CaptureDeviceInfo.class);
+       // deviceDetails.setOrderHash(deviceDetailsDto.getOrderHash());
+        deviceDetails.setClientIp(deviceDetailsDto.getClientIp());
+        deviceDetails.setDeviceDetails(deviceDetailsDto.getDeviceDetail().getBytes());
+        deviceDetails.setCreatedDate(DateTimeUtils.currentTimeMillis());
+        return capturedetailinforepository.save(deviceDetails);
+      
+    }
+
+  <S extends T> S save(S entity);
