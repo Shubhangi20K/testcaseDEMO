@@ -1,39 +1,19 @@
-@GetMapping(path = "/deviceDetail/{orderHash}")
-@Operation(summary = "Get Device Details by OrderHash")
-public DeviceDetails getDeviceDetailsByPath(@PathVariable String orderHash) 
-        throws InstantiationException, IllegalAccessException {
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-    logger.info("Fetching Device Details with orderHash {}", orderHash);
+@Configuration
+public class OpenAPIConfig {
 
-    return tokenService.getDeviceDetails(orderHash);
-}
-
-@Repository
-public interface CaptureDetailInfoRepository extends JpaRepository<DeviceDetails, Long> {
-
-    Optional<DeviceDetails> findByOrderHash(String orderHash);
-}
-@Service
-public class TokenService {
-
-    @Autowired
-    private CaptureDetailInfoRepository captureDetailInfoRepository;
-
-    public DeviceDetails getDeviceDetails(String orderHash) throws InstantiationException, IllegalAccessException {
-        logger.debug("Fetching device details for orderHash {}", orderHash);
-
-        // Fetch data from the repository
-        return captureDetailInfoRepository.findByOrderHash(orderHash)
-                .orElseThrow(() -> new IllegalAccessException("Device details not found for orderHash: " + orderHash));
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("My Spring Boot Application API")
+                        .version("1.0.0")
+                        .description("This is a sample Spring Boot application with Swagger")
+                        .license(new License().name("Apache 2.0").url("http://springdoc.org")));
     }
-}
-@GetMapping(path = "/deviceDetail")
-@Operation(summary = "Get Device Details by OrderHash")
-public DeviceDetails getDeviceDetails(@RequestParam String orderHash) 
-        throws InstantiationException, IllegalAccessException {
-
-    logger.info("Fetching Device Details with orderHash {}", orderHash);
-
-    // Retrieve device details from the service layer
-    return tokenService.getDeviceDetails(orderHash);
 }
